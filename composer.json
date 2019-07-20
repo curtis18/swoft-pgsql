@@ -1,0 +1,34 @@
+{
+    "name": "curtis18/swoft-pgsql",
+    "type": "library",
+    "keywords": [
+        "php",
+        "swoole",
+        "swoft",
+        "pgsql",
+        "postgresql"
+    ],
+    "description": "swoft postgresql component",
+    "license": "Apache-2.0",
+    "require": {
+        "swoft/framework": "~2.0.0",
+        "swoft/connection-pool": "~2.0.0"
+    },
+    "autoload": {
+        "classmap": [
+        ],
+        "psr-4": {
+            "Swoft\\Pgsql\\": "src/"
+        },
+        "files": [
+        ]
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "SwoftTest\\Pgsql\\Testing\\": "test/testing"
+      }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.5"
+    }
+}
