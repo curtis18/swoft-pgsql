@@ -53,4 +53,35 @@ class PgsqlConnector implements ConnectorInterface
 
         return $client;
     }
+
+    /**
+     * @param array $config
+     *
+     * @return object
+     * @throws Throwable
+     */
+    public function pgConnect(array $config)
+    {
+        try {
+            $connection = pg_connect("host=".$config['host']." port=".$config['port']." dbname=".$config['database']." user=".$config['user']." password=".$config['password']);
+        } catch (Throwable $e) {
+            throw new PgsqlException(
+                sprintf('Pgsql cannot be connected!')
+            );
+        }
+
+        if ($connection === false){
+            throw new PgsqlException(
+                sprintf('Pgsql connection fail!')
+            );
+        } else {
+            if (!empty($config['schema'])){
+                pg_query($connection, "SET search_path TO ".implode(",", $config['schema']).";");
+            } else {
+                pg_query($connection, "SET search_path TO public;");
+            }
+        }
+
+        return $connection;
+    }
 }

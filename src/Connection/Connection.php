@@ -30,6 +30,11 @@ abstract class Connection extends AbstractConnection implements ConnectionInterf
     protected $client;
 
     /**
+     * @var PgResource
+     */
+    protected $pgresource;
+
+    /**
      * @var PgsqlDb
      */
     protected $pgsqlDb;
@@ -66,11 +71,21 @@ abstract class Connection extends AbstractConnection implements ConnectionInterf
     }
 
     /**
+     * Close Pg connection
+     */
+    public function pgClose(): void
+    {
+        pg_close($this->pgresource);
+    }
+
+    /**
+     * @param bool $boolPgResource
+     * 
      * @throws ReflectionException
      * @throws ContainerException
      * @throws PgsqlException
      */
-    public function createClient(): void
+    public function createClient(bool $boolPgResource = false): void
     {
         $config = [
             'host'           => $this->pgsqlDb->getHost(),
@@ -84,9 +99,12 @@ abstract class Connection extends AbstractConnection implements ConnectionInterf
             'read_timeout'   => $this->pgsqlDb->getReadTimeout(),
         ];
 
-        $this->client = $this->pgsqlDb->getConnector()->connect($config);
+        if ($boolPgResource == false) {
+            $this->client = $this->pgsqlDb->getConnector()->connect($config);
+        } else {
+            $this->pgresource = $this->pgsqlDb->getConnector()->pgConnect($config);
+        }
     }
-
 
     /**
      * @param bool $force
@@ -179,5 +197,46 @@ abstract class Connection extends AbstractConnection implements ConnectionInterf
             $values[] = array_values($rows);
         }
         return $values;
+    }
+
+    /**
+     * Copy a table and return value array
+     *
+     * @param string $table_name
+     * @param string $delimiter
+     * @param string $null_as
+     *
+     * @return array
+     * @throws ContainerException
+     * @throws DbException
+     * @throws ReflectionException
+     */
+    public function copyTo(string $table_name, string $delimiter = "|", string $null_as = "\\NULL"): array
+    {
+        $this->createClient(true);
+        $result = pg_copy_to($this->pgresource, $table_name, $delimiter, $null_as);
+        $this->pgClose();
+        return ($result === false) ? [] : $result;
+    }
+
+    /**
+     * Import array value into a table and return bool
+     *
+     * @param string $table_name
+     * @param array  $rows
+     * @param string $delimiter
+     * @param string $null_as
+     *
+     * @return bool
+     * @throws ContainerException
+     * @throws DbException
+     * @throws ReflectionException
+     */
+    public function copyFrom(string $table_name, array $rows, string $delimiter = "|", string $null_as = "\\NULL"): bool
+    {
+        $this->createClient(true);
+        $result = pg_copy_from($this->pgresource, $table_name, $rows, $delimiter, $null_as);
+        $this->pgClose();
+        return $result;
     }
 }

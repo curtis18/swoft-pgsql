@@ -16,4 +16,11 @@ interface ConnectorInterface
      * @return Object
      */
     public function connect(array $config);
+
+    /**
+     * @param array $config
+     *
+     * @return Object
+     */
+    public function pgConnect(array $config);
 }
