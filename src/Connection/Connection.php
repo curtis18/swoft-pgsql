@@ -168,8 +168,9 @@ abstract class Connection extends AbstractConnection implements ConnectionInterf
         if (empty($bindings)) {
             $resource = $this->client->query($query);
         } else {
-            $prepare = $this->client->prepare("sqlquery", $query);
-            $resource = $this->client->execute("sqlquery", $bindings);
+            $hash = md5($query);
+            $prepare = $this->client->prepare("query_".$hash, $query);
+            $resource = $this->client->execute("query_".$hash, $bindings);
         }
         
         $output = $this->client->fetchAll($resource);
